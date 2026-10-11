@@ -29,8 +29,11 @@ Sains Data/
 │   ├── data-sains.ipynb            # Notebook analisis eksplorasi kolaborasi tim
 │   └── dataset_GANGGUAN_TIDUR.csv  # Salinan dataset lokal modul
 │
-├── 02_Data_Preparation/            # [BAB 3] Penyiapan & Rekayasa Data (WIP di branch fitur)
-│   └── README.md                   # Panduan & status pengerjaan data preparation
+├── 02_Data_Preparation/            # [BAB 3] Penyiapan & Rekayasa Data
+│   ├── README.md                   # Dokumentasi ringkas modul penyiapan data
+│   ├── data_preparation.ipynb      # Notebook pipeline imputasi KNN & SMOTE-NC
+│   ├── dataset_imputed.csv         # Artefak dataset hasil imputasi utuh (100k baris x 32 kolom)
+│   └── dataset_balanced.csv        # Artefak dataset seimbang hasil SMOTE-NC (216k baris x 32 kolom)
 │
 └── 03_Modeling/                    # [BAB 4] Pemodelan & Evaluasi (Tahap Selanjutnya)
     └── README.md                   # Panduan eksperimen model klasifikasi tim
