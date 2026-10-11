@@ -1,10 +1,29 @@
-﻿# AGENTS.md - Catatan Progress Proyek Sains Data
+# AGENTS.md - Catatan Progress Proyek Sains Data
 > **Mata Kuliah**: IF2515403 - Sains Data (Semester 5, ITK)
 > **Topik**: Klasifikasi Risiko Gangguan Tidur Berdasarkan Pola Hidup dan Biometrik
-> **File Utama**: `Sains_data.ipynb`
-> **Dataset**: `dataset_GANGGUAN_TIDUR.csv` (100.002 baris x 32 kolom)
 > **Dosen**: Ramadhan Paninggalih
 > **Deadline**: UTS (Bab 1-3), UAS (Bab 1-5 penuh)
+> **Pembagian Jobdesk Anggota**: Khusus **Penanganan Missing Values** dan **Penanganan Ketidakseimbangan Data (Class Imbalance)**
+
+---
+
+## STRUKTUR WORKSPACE & FILE UTAMA
+
+```
+datascience2627/
+├── Sains_data.ipynb             # Notebook Utama: Bab 1 (Business Understanding) & Bab 2 (Data Understanding)
+├── dataset_GANGGUAN_TIDUR.csv   # Dataset mentah tugas (100.000 baris x 32 kolom, ada 10% NaN per kolom)
+├── data prep/                   # Folder Khusus Tahap Penyiapan Data (Bab 3)
+│   ├── data_preparation.ipynb  # Notebook Bab 3: Khusus Jobdesk Missing Values & Imbalanced Data
+│   ├── dataset_imputed.csv      # Dataset hasil imputasi utuh (100.000 baris x 31 kolom, 0 missing)
+│   └── dataset_balanced.csv     # Dataset seimbang hasil resampling (216.624 baris x 31 kolom, 0 missing)
+├── by team/                     # Berkas kolaborasi kelompok
+│   └── data-sains.ipynb         # Eksplorasi Data Understanding (Bab 2) tim
+├── reference/                   # Sumber Referensi Benchmark Kaggle
+│   ├── sleep_health_dataset.csv # Dataset asli Kaggle (100.000 baris, 0 missing value - Ground Truth)
+│   └── sleep-health-cognitive-performance-analysis.ipynb # Notebook analisis referensi Kaggle
+└── AGENTS.md                    # Catatan dokumentasi & tracking progres proyek
+```
 
 ---
 
@@ -12,156 +31,94 @@
 
 | Item | Detail |
 |:---|:---|
-| **Python Env** | `.venv` di `d:\kevin\Documents\ITK\Semester 5\Sains Data\.venv` |
-| **Kernel Notebook** | Gunakan venv di atas sebagai kernel VSCode |
-| **Library Utama** | `pandas`, `matplotlib`, `seaborn`, `scikit-learn`, `imbalanced-learn` |
-| **Catatan Path** | Dataset dibaca dengan path relatif `"dataset_GANGGUAN_TIDUR.csv"` - pastikan kernel CWD = folder Sains Data |
-
-### Perintah install jika ada library kurang:
-`ash
-.venv\Scripts\pip install pandas matplotlib seaborn scikit-learn imbalanced-learn
-`
+| **Python Env** | Virtual Environment di `./.venv` |
+| **Kernel Notebook** | `.venv` (Python 3.12) |
+| **Library Utama** | `pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`, `imbalanced-learn`, `nbformat` |
+| **Path Relatif** | Dataset mentah: `dataset_GANGGUAN_TIDUR.csv` (root) atau `../dataset_GANGGUAN_TIDUR.csv` (dari `data prep/`) |
 
 ---
 
-## TENTANG DATASET
+## TENTANG DATASET & STATUS PENGERJAAN JOBDESK
 
-| Properti | Nilai |
-|:---|:---|
-| Baris | 100.002 (termasuk header) -> 100.000 observasi |
-| Kolom | 32 fitur + 1 target |
-| Missing Values | **10.000 baris (10%)** di semua kolom KECUALI `sleep_disorder_risk` |
-| Duplikasi | 0 |
-| Target | `sleep_disorder_risk` -> 4 kelas: Healthy, Mild, Moderate, Severe |
-| Imbalanced? | Ya - Healthy ~54%, Mild ~33%, Moderate ~8%, Severe ~4% |
-| Outlier Signifikan | `caffeine_mg_before_bed`, `alcohol_units_before_bed`, `screen_time_before_bed_mins` |
+| Properti | Nilai Mentah | Hasil Imputasi (`dataset_imputed.csv`) | Hasil Penyeimbangan (`dataset_balanced.csv`) |
+|:---|:---|:---|:---|
+| Baris | 100.000 observasi unik | 100.000 observasi unik | 216.624 observasi (seimbang) |
+| Kolom | 31 fitur + 1 target (`sleep_disorder_risk`) | 31 fitur + 1 target (32 kolom utuh) | 31 fitur + 1 target (32 kolom utuh) |
+| Missing Values | **310.000 sel (10% di 31 kolom)** | **0 sel kosong (100% lengkap)** | **0 sel kosong (100% lengkap)** |
+| Identifier | Kolom `person_id` ada | Dipertahankan utuh (rekonstruksi urut `index + 1`) | Dipertahankan utuh |
+| Target Kelas | 4 kategori: Healthy, Mild, Moderate, Severe | 4 kategori (distribusi asli) | 4 kategori seimbang (25% per kelas) |
+| Proporsi Target | Healthy ~54.2%, Mild ~33.5%, Moderate ~8.3%, Severe ~4.0% | Healthy: 54.156, Mild: 33.479, Mod: 8.299, Sev: 4.066 | Masing-masing kelas 54.156 sampel (25.0%) |
 
 ### Kategori Fitur:
 - **Demografi**: `age`, `gender`, `occupation`, `country`
 - **Biometrik**: `bmi`, `heart_rate_resting_bpm`
 - **Pola Tidur**: `sleep_duration_hrs`, `sleep_quality_score`, `rem_percentage`, `deep_sleep_percentage`, `sleep_latency_mins`, `wake_episodes_per_night`, `nap_duration_mins`, `weekend_sleep_diff_hrs`, `felt_rested`
 - **Gaya Hidup**: `caffeine_mg_before_bed`, `alcohol_units_before_bed`, `screen_time_before_bed_mins`, `exercise_day`, `steps_that_day`
-- **Psikologis**: `stress_score`, `mental_health_condition`
-- **Pekerjaan/Aktivitas**: `work_hours_that_day`, `shift_work`
+- **Psikologis & Kerja**: `stress_score`, `mental_health_condition`, `work_hours_that_day`, `shift_work`
 - **Sirkadian/Lingkungan**: `chronotype`, `room_temperature_celsius`, `season`, `day_type`
-- **Kognitif**: `cognitive_performance_score`
-- **Medis**: `sleep_aid_used`
-- **Identifier (drop saat Data Prep)**: `person_id`
+- **Kognitif & Medis**: `cognitive_performance_score`, `sleep_aid_used`
+- **Identifier**: `person_id` (dipertahankan untuk tahap Feature Selection rekan tim)
 
 ---
 
-## STRUKTUR NOTEBOOK SAAT INI (21 Cells)
+## STATUS PROGRES & RUBRIK PENILAIAN UTS (Bab 1 - 3)
 
-| Cell | Tipe | Isi | Status |
-|:---|:---:|:---|:---:|
-| [0] | Markdown | **Bab 1 - Business Understanding** (Latbel, Rumusan, Tujuan, Kriteria Sukses) | SELESAI |
-| [1] | Markdown | **Bab 2 - Data Understanding**: Gambaran dataset + Kamus Data 32 fitur | SELESAI |
-| [2] | Code | Import + pd.set_option + read_csv + sample(20) + info() + describe(include='all').T | SELESAI |
-| [3] | Code | Heatmap Korelasi (sns.heatmap) | SELESAI |
-| [4] | Markdown | Header "Analisis Tambahan CRISP-DM" | ADA |
-| [5] | Code | Missing Value Analysis + Deteksi Duplikasi | SELESAI |
-| [6] | Code | Bar Chart distribusi target sleep_disorder_risk | SELESAI |
-| [7] | Markdown | Header Pie Chart (Slide 10) | ADA |
-| [8] | Code | Pie Chart (Proporsi target & gender) | SELESAI |
-| [9] | Code | Histogram: Age & Sleep Duration | SELESAI |
-| [10] | Markdown | Header Distribusi Fitur Tambahan (Stres, Kualitas, BMI, Gender) | ADA |
-| [11] | Code | Histogram 2x2: Sleep Quality, Stress, BMI, Gender Bar | SELESAI |
-| [12] | Markdown | Header Distribusi Gaya Hidup & Pekerjaan | ADA |
-| [13] | Code | Histogram 2x2: Kafein, Alkohol, Screen Time, Pekerjaan | SELESAI |
-| [14] | Markdown | Header Scatter Plot (Slide 12) | ADA |
-| [15] | Code | Scatter Plot: Stres vs Durasi Tidur & Screen Time vs Sleep Latency | SELESAI |
-| [16] | Markdown | Header Skewness Analysis (Slide 16) | ADA |
-| [17] | Code | Tabel Skewness (Mean, Median, Mode, Bentuk Distribusi) per 13 fitur | SELESAI |
-| [18] | Markdown | Header Outlier IQR & Z-Score (Slide 13, 20, 21) | ADA |
-| [19] | Code | Tabel Outlier (IQR + Z-Score) + Box Plot Univariate 4 fitur | SELESAI |
-| [20] | Markdown | Rangkuman Insight Awal untuk Data Preparation (Slide 22) | SELESAI |
+### Bab 1 - Business Understanding (`Sains_data.ipynb`)
+| Kriteria | Skor Target | Status | Catatan |
+|:---|:---:|:---:|:---|
+| Latar Belakang Masalah | 5 | SELESAI | Konteks masalah tidur & dampak kognitif/akademik |
+| Rumusan Masalah | 5 | SELESAI | Spesifik, terukur untuk klasifikasi 4 tingkat risiko |
+| Tujuan Analisis | 5 | SELESAI | Sistem klasifikasi & pipeline CRISP-DM terstandarisasi |
+| Kriteria Kesuksesan | 5 | SELESAI | Ambang batas akurasi, F1-macro $\ge 85\%$ |
 
----
+### Bab 2 - Data Understanding (`Sains_data.ipynb` / `by team/data-sains.ipynb`)
+| Kriteria | Skor Target | Status | Catatan |
+|:---|:---:|:---:|:---|
+| $\ge 20$ Sampel Data | 5 | SELESAI | Ditampilkan via `.sample(20)` |
+| Kamus Data 32 Fitur | 5 | SELESAI | Tabel deskripsi atribut & tipe data lengkap |
+| Statistik Deskriptif | 5 | SELESAI | `.describe(include='all').T` rapi tanpa terpotong |
+| Visualisasi Distribusi & Skewness | 5 | SELESAI | Histogram + Tabel analisis skewness 13 fitur |
+| Korelasi Antar Fitur (Heatmap) | 5 | SELESAI | Heatmap korelasi matriks numerik |
+| Validasi Missing, Duplikasi, Outlier | 5 | SELESAI | Deteksi 10% NaN, 0 duplikat, dan deteksi outlier IQR & Z-score |
+| Pie Chart, Bar Chart, Scatter Plot | 5 | SELESAI | Proporsi kelas, gender, scatter durasi vs stres & screen time |
+| Bivariate Boxplot (Fitur vs Target) | 5 | SELESAI | Visualisasi boxplot per kelas target tersedia |
+| Rangkuman Insight Awal | 5 | SELESAI | Kesimpulan awal pemandu Data Preparation |
 
-## RUBRIK PENILAIAN UTS (s/d Bab 3 - Data Preparation)
-
-### Bab 1 - Business Understanding
-| Kriteria | Skor Target | Status |
-|:---|:---:|:---:|
-| Latar Belakang Masalah (konteks domain & dampak) | 5 | SELESAI |
-| Rumusan Masalah (spesifik & terukur) | 5 | SELESAI |
-| Tujuan Analisis | 5 | SELESAI |
-| Kriteria Kesuksesan (ambang batas metrik >= 85%) | 5 | SELESAI |
-
-### Bab 2 - Data Understanding
-| Kriteria | Skor Target | Status |
-|:---|:---:|:---:|
-| >= 20 Sampel Data ditampilkan | 5 | SELESAI |
-| Atribut + Tipe Data dijelaskan (Kamus Data 32 fitur) | 5 | SELESAI |
-| Statistik Deskriptif (describe) | 5 | SELESAI |
-| Visualisasi Distribusi (Histogram) + Skewness | 5 | SELESAI |
-| Korelasi Antar Fitur (Heatmap) | 5 | SELESAI |
-| Validasi: Missing Value, Duplikasi, Outlier | 5 | SELESAI |
-| Pie Chart + Bar Chart + Scatter Plot | 5 | SELESAI |
-| **Bivariate Boxplot (fitur vs. kelas target)** | 5 | PERLU CEK ULANG |
-| Narasi/interpretasi di bawah grafik kunci | 5 | BELUM ADA |
-| Rangkuman Insight Awal | 5 | SELESAI |
-
-### Bab 3 - Data Preparation (BELUM DIKERJAKAN)
-| Tahapan | Detail | Status |
-|:---|:---|:---:|
-| Penentuan Objek | Drop `person_id` (identifier, tidak prediktif) | BELUM |
-| Handling Missing Values | Imputasi Median (fitur numerik skewed) + Modus (fitur kategorik) | BELUM |
-| Handling Duplikasi | Verifikasi dan drop jika ada | BELUM |
-| Handling Outliers | IQR Capping / Winsorization | BELUM |
-| Encoding Target | Healthy->0, Mild->1, Moderate->2, Severe->3 (Ordinal Encoding) | BELUM |
-| Encoding Fitur Kategorik | One-Hot Encoding: gender, occupation, country, chronotype, mental_health_condition, season, day_type | BELUM |
-| Feature Scaling | StandardScaler atau RobustScaler untuk semua fitur numerik | BELUM |
-| Feature Selection | Berdasarkan korelasi Pearson / Mutual Information | BELUM |
-| Handling Imbalanced Data | SMOTE atau RandomOverSampler (imbalanced-learn) | BELUM |
-| Dimensionality Reduction (PCA) | Wajib sesuai instruksi dosen Hal. 5 | BELUM |
+### Bab 3 - Data Preparation (`data prep/data_preparation.ipynb` - Jobdesk Personal)
+| Tahapan | Detail | Status | Penanggung Jawab |
+|:---|:---|:---:|:---|
+| **Retensi Objek & Integritas** | Mempertahankan 32 kolom utuh (retensi `person_id` untuk Feature Selection rekan tim) & 0 duplikasi | SELESAI | Jobdesk Personal |
+| **Handling Missing Values** | Rekonstruksi urut `person_id` (`index + 1`) + **KNN Imputer ($k=5$)** untuk 23 numerik + **Modus** untuk 7 kategorik | SELESAI | **Jobdesk Personal (Tugas 1)** |
+| **Handling Outliers** | Audit kuantitatif & visualisasi sebaran ekstrem (Retensi Alami / Keep As-Is untuk baseline model Bab 4) | SELESAI | **Jobdesk Personal & Tim** |
+| **Handling Imbalanced Data** | Analisis ketimpangan kelas target + **SMOTE-NC** ke 54.156 per kelas | SELESAI | **Jobdesk Personal (Tugas 2)** |
+| **Ekspor Berkas Hasil** | `dataset_imputed.csv` (100k baris x 32 kolom) & `dataset_balanced.csv` (216k baris x 32 kolom) | SELESAI | **Jobdesk Personal** |
+| *Feature Selection* | Eliminasi `person_id` dan seleksi fitur paling informatif | *Tahap Tim Lain* | Anggota Tim Lain |
+| *Feature Engineering* | Pembentukan fitur komposit domain medis | *Tahap Tim Lain* | Anggota Tim Lain |
+| *Feature Encoding* | Ordinal / One-Hot Encoding fitur non-numerik | *Tahap Tim Lain* | Anggota Tim Lain |
+| *Feature Scaling & PCA* | Standardisasi & reduksi dimensi | *Tahap Tim Lain* | Anggota Tim Lain |
 
 ---
 
-## KEPUTUSAN & KONVENSI TEKNIS
+## KEPUTUSAN & KONVENSI TEKNIS JOBDESK
 
 | Keputusan | Alasan |
 |:---|:---|
-| df.describe(include='all').T | Agar seluruh 32 fitur (numerik + kategorik) tampil rapi tanpa terpotong |
-| pd.set_option('display.max_columns', None) | Mencegah kolom terpotong dengan tanda ... di output |
-| Scatter plot hanya 2 pasangan | Fokus pada pasangan paling relevan secara domain; kuantitas bukan kriteria skor |
-| Distribusi tidak untuk semua 32 fitur | Cukup representatif per kategori fitur; fitur binary & identifier tidak perlu divisualisasikan |
-| Sampel scatter plot = 3.000 baris (random_state=42) | Optimasi performa render pada dataset 100.000 baris agar tidak padat |
-| df.info(verbose=True, show_counts=True) | Menampilkan seluruh 32 kolom secara eksplisit |
-| Skewness threshold > 0.5 atau < -0.5 | Sesuai konvensi statistik standar (George & Mallery, 2010) |
-| IQR Outlier threshold: 1.5 x IQR | Sesuai rumus baku Tukey (Slide 21 dosen) |
-| Z-Score threshold: |Z| > 3 | Sesuai aturan 3-sigma (Slide 21 dosen) |
+| **Retensi Kolom `person_id` (32 Kolom Utuh)** | Menjaga agar porsi tugas rekan tim pada tahap *Feature Selection* tidak terlangkahi. Nilai hilang pada `person_id` direkonstruksi secara eksak sesuai urutan indeks (`index + 1`). |
+| **KNN Imputer ($k=5$) untuk Fitur Numerik** | Memanfaatkan kemiripan multivariat profil responden (bukan angka rata-rata/median tunggal). Dioptimasi dengan batch processing 20.000 baris agar cepat (~45 detik) dan hemat RAM. |
+| **Modus untuk Fitur Kategorikal String** | Menjaga integritas label kategori (`gender`, `occupation`, dll.) tanpa memaksakan kalkulasi numerik. |
+| **Retensi Outlier Alami (Keep As-Is) untuk Baseline Model** | Nilai ekstrem pada biometrik pasien kritis (*Severe*) merupakan sinyal patologis nyata, bukan kesalahan input. Algoritma pohon (Random Forest/XGBoost) kebal outlier univariat. Data dipertahankan murni (*as-is*) sebagai baseline benchmark, dengan opsi A/B testing di Bab 4. |
+| **SMOTE-NC untuk Imbalanced Data** | Menghasilkan sampel sintetis realistis via interpolasi $k$-NN kontinu pada fitur numerik, sekaligus menjaga integritas label kategori teks via modus tetangga terdekat. `person_id` direkonstruksi berurutan sehingga seluruh 32 kolom awal tetap utuh dan selaras untuk alur kerja rekan tim berikutnya. |
+| **Ekspor Dua File Artefak 32 Kolom** | Menyediakan `dataset_imputed.csv` (distribusi asli) dan `dataset_balanced.csv` (distribusi seimbang) lengkap 32 kolom agar rekan kelompok memiliki fleksibilitas penuh dalam alur pemodelan mereka. |
 
 ---
 
-## CATATAN BUSINESS UNDERSTANDING (Dari Tulisan Tangan Anda)
+## ROADMAP & RENCANA TAHAP SELANJUTNYA
 
-- **Latbel**: Banyak mahasiswa jam tidur kurang -> kesehatan menurun, konsentrasi/intelektual turun
-- **Rumusan**: Bagaimana mengetahui tingkat gangguan tidur mahasiswa & cara klasifikasi berdasarkan data
-- **Tujuan**: Membuat sistem klasifikasi gangguan tidur & pipeline data preparation
-- **Kriteria**: Saat evaluasi matriks mencapai 85% semua
+### 1. Serah Terima Data ke Anggota Kelompok
+* [x] Selesaikan pipeline imputasi KNN & penyeimbangan kelas di [data_preparation.ipynb](file:///d:/kevin/Documents/ITK/Semester%205/Sains%20Data/data%20prep/data_preparation.ipynb)
+* [x] Generate file [dataset_imputed.csv](file:///d:/kevin/Documents/ITK/Semester%205/Sains%20Data/data%20prep/dataset_imputed.csv) dan [dataset_balanced.csv](file:///d:/kevin/Documents/ITK/Semester%205/Sains%20Data/data%20prep/dataset_balanced.csv)
+* [ ] Koordinasi dengan rekan tim yang menangani *outlier*, *feature engineering*, dan *encoding*
 
----
-
-## RENCANA TAHAP SELANJUTNYA
-
-### Prioritas Segera (UTS)
-1. Tambahkan narasi interpretasi di bawah grafik Heatmap, Scatter Plot, dan Boxplot Outlier
-2. Pastikan Bivariate Boxplot (fitur kunci per kelas target) ada di notebook
-3. **Kerjakan Bab 3 - Data Preparation** (seluruh pipeline dari atas)
-
-### Setelah UTS (UAS)
-4. **Bab 4 - Modeling**: Train/test split -> Pilih algoritma (Random Forest, XGBoost, SVM) -> Training -> Cross-validation
-5. **Bab 5 - Evaluasi & Deployment**: Confusion Matrix, Accuracy, Precision, Recall, F1-Score, ROC-AUC
-
----
-
-## BUG & FIX YANG SUDAH DISELESAIKAN
-
-| Masalah | Penyebab | Solusi |
-|:---|:---|:---|
-| Heatmap error fmt=".2f" | Parameter tidak valid saat annot=False | Hapus fmt=".2f" |
-| Heatmap error .corr() | Pandas baru butuh numeric_only=True | Ganti ke kolom_numerik.corr(numeric_only=True) |
-| df.describe() hanya tampil fitur numerik | Default hanya numerik | Ganti ke describe(include='all').T |
-| Kolom terpotong ... di output | Batas default pandas 20 kolom | Tambah pd.set_option('display.max_columns', None) |
-| UnicodeEncodeError karakter aproks di tabel skewness | Windows CP-1252 tidak support unicode tertentu | Ganti karakter ke versi ASCII |
+### 2. Persiapan Bab 4 - Modeling & Evaluasi (Bersama Kelompok)
+* Pengujian algoritma klasifikasi (Random Forest, XGBoost, LightGBM)
+* Evaluasi metrik (Confusion Matrix, Macro F1-Score $\ge 85\%$, Recall kelas kritis *Severe* dan *Moderate*)
