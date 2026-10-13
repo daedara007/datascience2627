@@ -2,7 +2,7 @@
   "input_feature_count": 49,
   "component_count": 31,
   "variance_target": 0.95,
-  "retained_variance": 0.9520091328631468,
+  "retained_variance": 0.9505300647800521,
   "solver": "full",
   "whiten": false,
   "fit_population": "original training split before SMOTE-NC",
@@ -15,6 +15,10 @@
     "select__chi_square__percentile": 75
   },
   "test_used_for_selection": false,
+  "imputation": "ScaledKNNImputer",
+  "n_neighbors": 5,
+  "max_donors": 10000,
+  "distance_scaler": "RobustScaler",
   "versions": {
     "numpy": "2.5.4",
     "pandas": "3.0.6",

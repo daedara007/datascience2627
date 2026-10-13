@@ -8,6 +8,10 @@
   ],
   "transformation": "yeo-johnson",
   "power_standardize": false,
+  "imputation": "ScaledKNNImputer",
+  "n_neighbors": 5,
+  "max_donors": 10000,
+  "distance_scaler": "RobustScaler",
   "target": "sleep_disorder_risk",
   "input_columns": [
     "age",

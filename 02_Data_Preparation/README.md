@@ -1,17 +1,18 @@
 # 🛠️ Bab 3 - Penyiapan Data (Data Preparation)
 
 Direktori ini berisi implementasi pipeline penyiapan data sesuai metodologi CRISP-DM:
-* **Penanganan Missing Values**: Rekonstruksi `person_id`, KNN Imputer ($k=5$) untuk 23 fitur numerik, dan Modus untuk 7 fitur kategorikal.
-* **Audit Outliers**: Analisis distribusi dan identifikasi outlier tanpa pemangkasan data valid biometrik.
-* **Penanganan Ketidakseimbangan Kelas**: Algoritma **SMOTE-NC** menyeimbangkan 4 kelas target (*Healthy*, *Mild*, *Moderate*, *Severe*) dari 100k observasi menjadi 216.624 observasi seimbang (54.156 per kelas).
+
+- **Penanganan Missing Values**: Rekonstruksi `person_id`, KNN Imputer ($k=5$) untuk 23 fitur numerik, dan Modus untuk 7 fitur kategorikal.
+- **Audit Outliers**: Analisis distribusi dan identifikasi outlier tanpa pemangkasan data valid biometrik.
+- **Penanganan Ketidakseimbangan Kelas**: Algoritma **SMOTE-NC** menyeimbangkan 4 kelas target (_Healthy_, _Mild_, _Moderate_, _Severe_) dari 100k observasi menjadi 216.624 observasi seimbang (54.156 per kelas).
 
 ---
 
 ## 📂 Berkas Modul
 
-* **`data_preparation.ipynb`**: Notebook Jupyter pipeline penyiapan data lengkap dari pemuatan data mentah hingga ekspor artefak.
-* **`dataset_imputed.csv`**: Dataset hasil imputasi lengkap tanpa missing values (100.000 baris x 32 kolom).
-* **`dataset_balanced.csv`**: Dataset hasil imputasi dan penyeimbangan kelas SMOTE-NC (216.624 baris x 32 kolom seimbang).
+- **`data_preparation.ipynb`**: Notebook Jupyter pipeline penyiapan data lengkap dari pemuatan data mentah hingga ekspor artefak.
+- **`dataset_imputed.csv`**: Dataset hasil imputasi lengkap tanpa missing values (100.000 baris x 32 kolom).
+- **`dataset_balanced.csv`**: Dataset hasil imputasi dan penyeimbangan kelas SMOTE-NC (216.624 baris x 32 kolom seimbang).
 
 ## One Hot Encoding untuk Modeling
 
@@ -19,10 +20,11 @@ Jalankan **bagian 7** notebook dari sel import-nya; bagian ini mandiri dan memba
 ulang dataset mentah. Urutannya: split stratified 80/20 → imputasi, Yeo-Johnson, dan RobustScaler
 berdasarkan train → SMOTE-NC hanya pada train → One Hot Encoding 7 fitur teks.
 Empat fitur biner tetap 0/1; `person_id` dan target tidak masuk fitur model.
-Baseline numerik menggunakan imputasi median → Yeo-Johnson → RobustScaler. Encoder menggunakan
+Numerik menggunakan KNN (k=5, donor train maksimal 10.000) → Yeo-Johnson → RobustScaler. Encoder menggunakan
 `handle_unknown='ignore'`, `drop=None`, dan output sparse float32.
 
 Artefak di `artifacts_ohe/`:
+
 - `X_train_encoded.npz`, `X_test_encoded.npz`: matriks fitur sparse.
 - `y_train.csv`, `y_test.csv`: label sesuai urutan baris matriks.
 - `feature_names.json`: nama dan urutan fitur.
@@ -35,7 +37,7 @@ mengukur performa holdout. Untuk cross-validation atau tuning, fit imputasi,
 scaling, SMOTE-NC, dan encoding dalam setiap fold memakai imblearn Pipeline;
 jangan melakukan cross-validation pada matriks yang sudah di-resample.
 
-Dependensi bagian 7: pandas, numpy, scipy, scikit-learn >= 1.2,
+Dependensi bagian 7: pandas, numpy, scipy, scikit-learn >= 1.6,
 imbalanced-learn yang kompatibel, dan joblib. Gunakan versi environment yang
 tercatat dalam metadata saat memuat preprocessing.
 
@@ -106,7 +108,24 @@ komponen, hasil CV, preprocessing lengkap, dan metadata. Gunakan
 berbobot kelas. Muat matriks dengan `numpy.load`; untuk data baru, transformasi
 imputasi/Yeo-Johnson/scaling → encoding → indeks fitur terpilih → PCA.
 
-Hasil saat ini: PCA mereduksi 49 kolom menjadi **31 komponen** dengan
-**95,20% variansi train**. Macro-F1 CV turun dari **0,67046** menjadi **0,64641**,
-dan recall Severe dari **0,74455** menjadi **0,72733**. Gunakan baseline tanpa
-PCA sebagai pilihan utama saat ini; PCA disimpan sebagai alternatif eksperimen.
+## Imputasi Numerik KNN
+
+`knn_imputation.py` menyediakan `ScaledKNNImputer`, khusus 19 fitur numerik.
+Scaling RobustScaler untuk jarak dipelajari dari nilai train yang teramati,
+KNN bekerja di skala itu, dan hasil dikembalikan ke satuan asli sebelum
+Yeo-Johnson + RobustScaler untuk modeling. Scaling memakai median sebagai
+pusat, tetapi **tidak memakai median untuk mengisi missing value**.
+
+Donor dibatasi sampel acak maksimal 10.000 baris train (`random_state=42`),
+transform dilakukan per batch 5.000 baris. Ini KNN dengan donor tersampel,
+bukan pencarian seluruh train. KNN dapat mempertimbangkan pola beberapa
+fitur, tetapi lebih mahal, sensitif terhadap kualitas tetangga/skala/outlier,
+dan belum tentu meningkatkan prediksi. Fitur kategori serta biner tetap
+menggunakan modus. Alur lama bagian 1–6 merupakan eksplorasi; gunakan bagian
+7–9 untuk modeling tanpa leakage. Modul ini harus tersedia pada Python path
+ketika memuat preprocessing atau baseline pipeline joblib.
+
+Hasil konfigurasi KNN terbaru: seleksi mempertahankan 49 kolom, dengan
+macro-F1 CV **0.67798** dan recall Severe **0.75899**.
+PCA mempertahankan 31 komponen (95.05% variansi), tetapi
+macro-F1 menjadi **0.65588**. Tanpa PCA tetap menjadi baseline utama.
