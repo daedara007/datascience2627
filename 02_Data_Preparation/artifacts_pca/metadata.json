@@ -1,0 +1,25 @@
+{
+  "input_feature_count": 49,
+  "component_count": 31,
+  "variance_target": 0.95,
+  "retained_variance": 0.9520091328631468,
+  "solver": "full",
+  "whiten": false,
+  "fit_population": "original training split before SMOTE-NC",
+  "transformation": "yeo-johnson",
+  "power_standardize": false,
+  "scaler": "RobustScaler",
+  "additional_dummy_scaling": false,
+  "selected_percentile_params": {
+    "select__anova__percentile": 75,
+    "select__chi_square__percentile": 75
+  },
+  "test_used_for_selection": false,
+  "versions": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "imbalanced-learn": "0.14.2",
+    "joblib": "1.6.0"
+  }
+}

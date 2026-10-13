@@ -82,3 +82,31 @@ serta sesudah transformasi pada train asli. Transformasi tidak menjamin semua
 fitur menjadi normal atau performa meningkat; hasil CV dan audit menjadi
 bahan evaluasi. ANOVA dihitung ulang karena transformasi nonlinear dapat
 mengubah skor F; Chi-square tetap hanya menerima kolom kategori/biner.
+
+## PCA: Reduksi Dimensi
+
+Jalankan **bagian 9** setelah bagian 7–8. PCA membentuk komponen gabungan dari
+fitur yang lolos ANOVA + Chi-square. `PCA(n_components=0.95, svd_solver='full',
+whiten=False)` di-fit pada train asli sebelum SMOTE-NC; train balanced dan test
+hanya ditransformasi. Numerik sudah memakai Yeo-Johnson + RobustScaler, dan
+indikator kategori/biner tetap 0/1. PCA melakukan centering, tanpa scaling
+tambahan pada dummy. Kontribusi kategori langka dapat menjadi kecil karena
+PCA mempertimbangkan variansi, bukan relevansi target.
+
+Threshold 95% menyatakan variansi train yang dipertahankan, bukan akurasi.
+CV membandingkan baseline tanpa PCA dengan PCA 95%, mem-fit ulang seluruh
+tahap dalam setiap fold train. Test disimpan untuk evaluasi final. Matriks
+tanpa PCA tetap tersedia karena reduksi dimensi tidak menjamin peningkatan
+prediksi atau interpretabilitas.
+
+`artifacts_pca/` berisi matriks dense `.npy` untuk train asli, train balanced,
+dan test, label berurutan sama, nama komponen, explained variance, koefisien
+komponen, hasil CV, preprocessing lengkap, dan metadata. Gunakan
+`X_train_original_pca.npy` bersama `y_train_original.csv` untuk baseline
+berbobot kelas. Muat matriks dengan `numpy.load`; untuk data baru, transformasi
+imputasi/Yeo-Johnson/scaling → encoding → indeks fitur terpilih → PCA.
+
+Hasil saat ini: PCA mereduksi 49 kolom menjadi **31 komponen** dengan
+**95,20% variansi train**. Macro-F1 CV turun dari **0,67046** menjadi **0,64641**,
+dan recall Severe dari **0,74455** menjadi **0,72733**. Gunakan baseline tanpa
+PCA sebagai pilihan utama saat ini; PCA disimpan sebagai alternatif eksperimen.
