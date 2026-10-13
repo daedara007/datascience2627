@@ -1,0 +1,95 @@
+{
+  "random_state": 42,
+  "test_size": 0.2,
+  "scaler": "RobustScaler",
+  "quantile_range": [
+    25.0,
+    75.0
+  ],
+  "transformation": "yeo-johnson",
+  "power_standardize": false,
+  "target": "sleep_disorder_risk",
+  "input_columns": [
+    "age",
+    "gender",
+    "occupation",
+    "bmi",
+    "country",
+    "sleep_duration_hrs",
+    "sleep_quality_score",
+    "rem_percentage",
+    "deep_sleep_percentage",
+    "sleep_latency_mins",
+    "wake_episodes_per_night",
+    "caffeine_mg_before_bed",
+    "alcohol_units_before_bed",
+    "screen_time_before_bed_mins",
+    "exercise_day",
+    "steps_that_day",
+    "nap_duration_mins",
+    "stress_score",
+    "work_hours_that_day",
+    "chronotype",
+    "mental_health_condition",
+    "heart_rate_resting_bpm",
+    "sleep_aid_used",
+    "shift_work",
+    "room_temperature_celsius",
+    "weekend_sleep_diff_hrs",
+    "season",
+    "day_type",
+    "cognitive_performance_score",
+    "felt_rested"
+  ],
+  "nominal_columns": [
+    "gender",
+    "occupation",
+    "country",
+    "chronotype",
+    "mental_health_condition",
+    "season",
+    "day_type"
+  ],
+  "binary_columns": [
+    "exercise_day",
+    "sleep_aid_used",
+    "shift_work",
+    "felt_rested"
+  ],
+  "continuous_columns": [
+    "age",
+    "bmi",
+    "sleep_duration_hrs",
+    "sleep_quality_score",
+    "rem_percentage",
+    "deep_sleep_percentage",
+    "sleep_latency_mins",
+    "wake_episodes_per_night",
+    "caffeine_mg_before_bed",
+    "alcohol_units_before_bed",
+    "screen_time_before_bed_mins",
+    "steps_that_day",
+    "nap_duration_mins",
+    "stress_score",
+    "work_hours_that_day",
+    "heart_rate_resting_bpm",
+    "room_temperature_celsius",
+    "weekend_sleep_diff_hrs",
+    "cognitive_performance_score"
+  ],
+  "train_shape": [
+    173300,
+    66
+  ],
+  "test_shape": [
+    20000,
+    66
+  ],
+  "versions": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "imbalanced-learn": "0.14.2",
+    "joblib": "1.6.0"
+  }
+}

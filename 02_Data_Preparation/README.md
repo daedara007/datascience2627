@@ -16,17 +16,17 @@ Direktori ini berisi implementasi pipeline penyiapan data sesuai metodologi CRIS
 ## One Hot Encoding untuk Modeling
 
 Jalankan **bagian 7** notebook dari sel import-nya; bagian ini mandiri dan membaca
-ulang dataset mentah. Urutannya: split stratified 80/20 → imputasi dan scaling
+ulang dataset mentah. Urutannya: split stratified 80/20 → imputasi, Yeo-Johnson, dan RobustScaler
 berdasarkan train → SMOTE-NC hanya pada train → One Hot Encoding 7 fitur teks.
 Empat fitur biner tetap 0/1; `person_id` dan target tidak masuk fitur model.
-Baseline numerik menggunakan median dan RobustScaler. Encoder menggunakan
+Baseline numerik menggunakan imputasi median → Yeo-Johnson → RobustScaler. Encoder menggunakan
 `handle_unknown='ignore'`, `drop=None`, dan output sparse float32.
 
 Artefak di `artifacts_ohe/`:
 - `X_train_encoded.npz`, `X_test_encoded.npz`: matriks fitur sparse.
 - `y_train.csv`, `y_test.csv`: label sesuai urutan baris matriks.
 - `feature_names.json`: nama dan urutan fitur.
-- `preprocessing.joblib`: imputer, scaler, dan encoder untuk inference.
+- `preprocessing.joblib`: imputer, Yeo-Johnson, scaler, dan encoder untuk inference.
 - `metadata.json`: konfigurasi split, skema input, dimensi, dan versi pustaka.
 
 **Evaluasi:** `dataset_imputed.csv` dan `dataset_balanced.csv` merupakan artefak
@@ -49,7 +49,7 @@ asumsi, dan batasan interpretasi p-value dijelaskan di notebook.
 
 Jumlah fitur dipilih dengan 3-fold stratified cross-validation pada train
 mentah, membandingkan 50%, 75%, dan 100% fitur pada setiap kelompok. Setiap fold
-mem-fit ulang imputasi, scaling, encoding, seleksi, dan Logistic Regression
+mem-fit ulang imputasi, Yeo-Johnson, scaling, encoding, seleksi, dan Logistic Regression
 berbobot kelas. Macro-F1 menentukan konfigurasi terbaik; recall Severe juga
 dilaporkan. Seleksi di-refit pada train asli sebelum SMOTE-NC dan tidak memakai
 test. Seleksi terjadi pada level kolom hasil encoding, bukan kelompok fitur asli.
@@ -62,8 +62,23 @@ Untuk baseline berbobot kelas, gunakan `X_train_original_selected.npz` dengan
 validasi ulang pilihan fitur dalam CV jika model atau resampling berubah.
 Test tetap disimpan untuk evaluasi final di tahap modeling.
 
-Scaling menggunakan **RobustScaler** pada 19 fitur numerik: median train sebagai
-pusat dan IQR train (P75 − P25) sebagai skala. Statistik ini lebih tahan terhadap
+Scaling menggunakan **RobustScaler** pada 19 fitur numerik: median nilai train setelah Yeo-Johnson sebagai
+pusat dan IQR-nya (P75 − P25) sebagai skala. Statistik ini lebih tahan terhadap
 nilai ekstrem, sesuai keputusan mempertahankan outlier. Fitur biner dan One Hot
 Encoding tetap 0/1. Scaling tidak menghapus outlier dan hanya di-fit pada train
 atau bagian train di setiap fold CV. Konfigurasi scaler dicatat dalam metadata.
+
+## Transformasi Numerik: Yeo-Johnson
+
+Yeo-Johnson diterapkan pada 19 fitur numerik setelah imputasi dan sebelum
+RobustScaler, untuk mengurangi kemencengan distribusi. Metode ini mendukung
+nilai positif, nol, dan negatif; fitur biner/kategori dan target tetap utuh.
+`PowerTransformer(method='yeo-johnson', standardize=False)` digunakan agar
+scaling ditangani oleh RobustScaler. Parameter transformasi dipelajari hanya
+dari train atau bagian train di setiap fold CV.
+
+`artifacts_ohe/transformation_audit.csv` mencatat lambda dan skewness sebelum
+serta sesudah transformasi pada train asli. Transformasi tidak menjamin semua
+fitur menjadi normal atau performa meningkat; hasil CV dan audit menjadi
+bahan evaluasi. ANOVA dihitung ulang karena transformasi nonlinear dapat
+mengubah skor F; Chi-square tetap hanya menerima kolom kategori/biner.

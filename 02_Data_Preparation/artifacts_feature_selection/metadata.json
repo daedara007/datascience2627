@@ -1,0 +1,27 @@
+{
+  "best_params": {
+    "select__anova__percentile": 75,
+    "select__chi_square__percentile": 75
+  },
+  "cv_folds": 3,
+  "scaler": "RobustScaler",
+  "quantile_range": [
+    25.0,
+    75.0
+  ],
+  "transformation": "yeo-johnson",
+  "power_standardize": false,
+  "best_cv_macro_f1": 0.6704620416780193,
+  "selection_model": "LogisticRegression(class_weight=balanced)",
+  "fit_population": "original training split before SMOTE-NC",
+  "input_feature_count": 66,
+  "selected_feature_count": 49,
+  "test_used_for_selection": false,
+  "versions": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "imbalanced-learn": "0.14.2",
+    "joblib": "1.6.0"
+  }
+}
