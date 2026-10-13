@@ -19,7 +19,7 @@ Jalankan **bagian 7** notebook dari sel import-nya; bagian ini mandiri dan memba
 ulang dataset mentah. Urutannya: split stratified 80/20 → imputasi dan scaling
 berdasarkan train → SMOTE-NC hanya pada train → One Hot Encoding 7 fitur teks.
 Empat fitur biner tetap 0/1; `person_id` dan target tidak masuk fitur model.
-Baseline numerik menggunakan median dan StandardScaler. Encoder menggunakan
+Baseline numerik menggunakan median dan RobustScaler. Encoder menggunakan
 `handle_unknown='ignore'`, `drop=None`, dan output sparse float32.
 
 Artefak di `artifacts_ohe/`:
@@ -61,3 +61,9 @@ Untuk baseline berbobot kelas, gunakan `X_train_original_selected.npz` dengan
 `y_train_original.csv`. Matriks balanced tersedia untuk eksperimen model lain;
 validasi ulang pilihan fitur dalam CV jika model atau resampling berubah.
 Test tetap disimpan untuk evaluasi final di tahap modeling.
+
+Scaling menggunakan **RobustScaler** pada 19 fitur numerik: median train sebagai
+pusat dan IQR train (P75 − P25) sebagai skala. Statistik ini lebih tahan terhadap
+nilai ekstrem, sesuai keputusan mempertahankan outlier. Fitur biner dan One Hot
+Encoding tetap 0/1. Scaling tidak menghapus outlier dan hanya di-fit pada train
+atau bagian train di setiap fold CV. Konfigurasi scaler dicatat dalam metadata.
