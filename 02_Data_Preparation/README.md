@@ -38,3 +38,26 @@ jangan melakukan cross-validation pada matriks yang sudah di-resample.
 Dependensi bagian 7: pandas, numpy, scipy, scikit-learn >= 1.2,
 imbalanced-learn yang kompatibel, dan joblib. Gunakan versi environment yang
 tercatat dalam metadata saat memuat preprocessing.
+
+## Feature Selection: ANOVA + Chi-square
+
+Jalankan **bagian 8** setelah bagian 7. ANOVA mengukur perbedaan rata-rata
+19 fitur numerik antarkelas. Chi-square mengukur hubungan 47 kolom indikator
+kategori/biner dengan target; fitur numerik hasil scaling yang bisa negatif tidak
+dimasukkan ke Chi-square. Skor kedua metode diurutkan terpisah. Alasan,
+asumsi, dan batasan interpretasi p-value dijelaskan di notebook.
+
+Jumlah fitur dipilih dengan 3-fold stratified cross-validation pada train
+mentah, membandingkan 50%, 75%, dan 100% fitur pada setiap kelompok. Setiap fold
+mem-fit ulang imputasi, scaling, encoding, seleksi, dan Logistic Regression
+berbobot kelas. Macro-F1 menentukan konfigurasi terbaik; recall Severe juga
+dilaporkan. Seleksi di-refit pada train asli sebelum SMOTE-NC dan tidak memakai
+test. Seleksi terjadi pada level kolom hasil encoding, bukan kelompok fitur asli.
+
+`artifacts_feature_selection/` berisi ranking ANOVA/Chi-square, hasil CV,
+daftar fitur terpilih, matriks train asli/train balanced/test dengan label
+berurutan sama, preprocessing untuk inference, metadata, dan pipeline baseline.
+Untuk baseline berbobot kelas, gunakan `X_train_original_selected.npz` dengan
+`y_train_original.csv`. Matriks balanced tersedia untuk eksperimen model lain;
+validasi ulang pilihan fitur dalam CV jika model atau resampling berubah.
+Test tetap disimpan untuk evaluasi final di tahap modeling.
